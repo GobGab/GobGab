@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -21,7 +20,6 @@ import com.facebook.login.widget.LoginButton;
 
 public class LoginActivity extends Activity  {
     private Button signInButton;
-    private EditText usernameInput,passwordInput;
     private LoginButton fbSignInButton;
     private  TextView fbInfo;
 
