@@ -15,6 +15,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/primaryText"
+        android:layout_centerHorizontal="true"
         android:id="@+id/testbutton"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/testbutton"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/testbutton2"/>
+
+    <TextView style="?android:textAppearanceMedium"
+        android:padding="16dp"
+        android:id="@+id/spotifyInfoTest"
+        android:lineSpacingMultiplier="1.2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/testbutton2"
+        android:layout_centerHorizontal="true"
+        android:text="" />
 
 </RelativeLayout>

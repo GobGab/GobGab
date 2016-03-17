@@ -2,6 +2,7 @@ package gobgabllc.gobgab;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -29,17 +30,25 @@ import com.spotify.sdk.android.player.Spotify;
  */
 public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerNotificationCallback, ConnectionStateCallback {
 
+    public static Boolean trackInfoNeedsUpdate = false;
+
+    public static final String PREFS_NAME = "MyPrefsFile";
+
     public static final String CLIENT_ID = "28206b88a44449ef9f101665f28ec1dd";
     public static final String REDIRECT_URI = "gobgabspotifylogin://callback";
 
-    private static final int REQUEST_CODE = 1337; //Spotify request code
+    public static final int SPOTIFY_REQUEST_CODE = 1337; //Spotify request code
 
     public static Player mPlayer;
     public static Boolean playerIsInitialized = false;
 
     public static Context MainMenuContext;
+
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
+
+    public static SharedPreferences settings;
+    public static  SharedPreferences.Editor editor;
 
     InboxFragment inboxFrag = new InboxFragment();
     PrimaryUIFragment uiFrag = new PrimaryUIFragment();
@@ -64,12 +73,27 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
 
         MainMenuContext = getApplicationContext();
 
-        AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI);
-        builder.setScopes(new String[]{"user-read-private", "streaming"});
-        builder.setShowDialog(true);
-        AuthenticationRequest request = builder.build();
+        settings = getSharedPreferences(PREFS_NAME, 0);
+        editor = settings.edit();
 
-        AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
+        //If Spotify token exists, create player. Else, retrieve token
+        if( settings.getString("SpotifyToken", "") != "" ){
+            //Toast.makeText(this, "instantiating", Toast.LENGTH_SHORT).show();
+
+            settings.getString("trackId", "");
+            settings.getString("artistName", "");
+            settings.getString("albumName", "");
+            settings.getString("trackName", "");
+
+            instantiateSpotifyPlayer();
+        }else{
+            AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(MainMenuPagerActivity.CLIENT_ID, AuthenticationResponse.Type.TOKEN, MainMenuPagerActivity.REDIRECT_URI);
+            builder.setScopes(new String[]{"user-read-private", "streaming"});
+            builder.setShowDialog(true);
+            AuthenticationRequest request = builder.build();
+
+            AuthenticationClient.openLoginActivity(this, SPOTIFY_REQUEST_CODE, request);
+        }
     }
 
     @Override
@@ -77,26 +101,15 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
         super.onActivityResult(requestCode, resultCode, intent);
 
         // Check if result comes from the correct activity
-        if (requestCode == REQUEST_CODE) {
+        if (requestCode == SPOTIFY_REQUEST_CODE) {
             AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
             if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
-                mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
-                    @Override
-                    public void onInitialized(Player player) {
-                        mPlayer.addConnectionStateCallback(MainMenuPagerActivity.this);
-                        mPlayer.addPlayerNotificationCallback(MainMenuPagerActivity.this);
-                        playerIsInitialized = true;
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        Log.e("MainMenuPAgerActivity", "Could not initialize player: " + throwable.getMessage());
-                    }
-                });
+                loginSpotify(response);
             }
         }
     }
+
+
 
 
     @Override
@@ -132,6 +145,7 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
 
     public void logout(){
         LoginManager.getInstance().logOut();
+        AuthenticationClient.clearCookies(this);
         Intent startMainScreen = new Intent(MainMenuPagerActivity.this, LoginActivity.class);
         startActivity(startMainScreen);
         finish();
@@ -217,5 +231,34 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     public void onDestroy() {
         Spotify.destroyPlayer(this);
         super.onDestroy();
+    }
+
+    public void loginSpotify(AuthenticationResponse response){
+        editor.putString("SpotifyToken", response.getAccessToken());
+
+        editor.commit(); //Save the spotify auth token
+    }
+
+    public void logoutSpotify(){
+
+    }
+
+    public void instantiateSpotifyPlayer(){
+        String token = settings.getString("SpotifyToken", "");
+
+        Config playerConfig = new Config(this, token, CLIENT_ID);
+        mPlayer = Spotify.getPlayer(playerConfig, this, new Player.InitializationObserver() {
+            @Override
+            public void onInitialized(Player player) {
+                mPlayer.addConnectionStateCallback(MainMenuPagerActivity.this);
+                mPlayer.addPlayerNotificationCallback(MainMenuPagerActivity.this);
+                playerIsInitialized = true;
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                Log.e("MainMenuPagerActivity", "Could not initialize player: " + throwable.getMessage());
+            }
+        });
     }
 }

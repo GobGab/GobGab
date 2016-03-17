@@ -32,6 +32,20 @@
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+
+        <receiver
+            android:name="MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="com.spotify.music.playbackstatechanged"/>
+                <action android:name="com.spotify.music.metadatachanged"/>
+                <action android:name="com.spotify.music.queuechanged"/>
+            </intent-filter>
+
+        </receiver>
+
     </application>
 
 </manifest>
