@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -34,6 +35,7 @@ import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.Spotify;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -61,6 +63,8 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     public static SharedPreferences settings;
     public static  SharedPreferences.Editor editor;
 
+    public static String facebookName;
+
     InboxFragment inboxFrag;
     PrimaryUIFragment uiFrag;
     SocialFragment socialFrag;
@@ -69,6 +73,8 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     private Toolbar toolbar;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
+
+    TextView facebookNameText;
 
     /**
      * The pager adapter, which provides the pages to the view pager widget.
@@ -161,7 +167,8 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
             @Override
             public void onDrawerOpened(View drawerView) {
                 // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
-
+                facebookNameText=(TextView)findViewById(R.id.facebookName);
+                facebookNameText.setText(facebookName);
                 super.onDrawerOpened(drawerView);
             }
         };
@@ -346,7 +353,11 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
                 new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted( JSONObject object, GraphResponse response) {
-                        // Application code
+                        try {
+                            //Parse JSON returned from spotify to retrieve the URL of the album art
+                            facebookName = object.getString("name");
+
+                        } catch (JSONException e) { e.printStackTrace(); }
                     }
                 });
         Bundle parameters = new Bundle();
