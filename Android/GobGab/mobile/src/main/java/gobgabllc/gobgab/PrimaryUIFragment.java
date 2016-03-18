@@ -3,12 +3,21 @@ package gobgabllc.gobgab;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.NetworkImageView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
@@ -18,11 +27,30 @@ import static com.google.android.gms.internal.zzir.runOnUiThread;
  */
 public class PrimaryUIFragment extends Fragment{
 
+    //Spotify Endpoint for GET requests to retrieve album information
+    public static String spotifyTrackWebRetrievalURL = "https://api.spotify.com/v1/tracks/";
+
+    public static String trackId;
+    public static String artistName;
+    public static String albumName;
+    public static String trackName;
+    public static String typeOfMusic;
+    public static String trackLengthSeconds;
+
     TextView spotifyInfoTest;
+
+    RelativeLayout primaryUIFragLayout;
+
+    ImageLoader mImageLoader;
+    NetworkImageView mNetworkImageView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mImageLoader = new ImageLoader(MySingleton.getInstance(getActivity()).getRequestQueue(), new LruBitmapCache(LruBitmapCache.getCacheSize(getActivity())));
+
+        MainMenuPagerActivity.trackInfoNeedsUpdate=true; //Update track info once when app loads using previously set values
     }
 
     @Override
@@ -41,11 +69,14 @@ public class PrimaryUIFragment extends Fragment{
         final FloatingActionButton button2 = (FloatingActionButton) rootView.findViewById(R.id.testbutton2);
         button2.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                updateBackgroundPicture();
             }
         });
 
+        mNetworkImageView = (NetworkImageView) rootView.findViewById(R.id.primaryUIFragmentBackground);
+
         spotifyInfoTest = (TextView) rootView.findViewById(R.id.spotifyInfoTest);
+
+        primaryUIFragLayout = (RelativeLayout) rootView.findViewById(R.id.primaryUIFragmentContent);
 
         return rootView;
     }
@@ -67,10 +98,6 @@ public class PrimaryUIFragment extends Fragment{
 
     public void playMusic(){
         if(MainMenuPagerActivity.playerIsInitialized){
-            Toast.makeText(getActivity(), "here2", Toast.LENGTH_SHORT).show();
-            TextView primaryText = (TextView) getView().findViewById(R.id.primaryText);
-            primaryText.setText("Schemin Up (feat. Drake)");
-
             MainMenuPagerActivity.mPlayer.play("spotify:track:63M8PK8yavNITSViKUB62p");
         }
     }
@@ -79,14 +106,16 @@ public class PrimaryUIFragment extends Fragment{
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                String s1 = MainMenuPagerActivity.settings.getString("trackId", "");
-                String s2 = MainMenuPagerActivity.settings.getString("artistName", "");
-                String s3 = MainMenuPagerActivity.settings.getString("albumName", "");
-                String s4 = MainMenuPagerActivity.settings.getString("trackName", "");
-                String s5 = MainMenuPagerActivity.settings.getString("typeOfMusic", "");
-                String s6 = MainMenuPagerActivity.settings.getInt("trackLengthSeconds", 0)+"";
+                trackId = MainMenuPagerActivity.settings.getString("trackId", "");
+                artistName = MainMenuPagerActivity.settings.getString("artistName", "");
+                albumName = MainMenuPagerActivity.settings.getString("albumName", "");
+                trackName = MainMenuPagerActivity.settings.getString("trackName", "");
+                typeOfMusic = MainMenuPagerActivity.settings.getString("typeOfMusic", "");
+                trackLengthSeconds = MainMenuPagerActivity.settings.getInt("trackLengthSeconds", 0) + "";
 
-                spotifyInfoTest.setText("Type: " + s5 + "\nTrackId: " + s1 + "\nArtist: " + s2 + "\nAlbum: " + s3 + "\nName: " + s4 + "\nLength: " + s6);
+                spotifyInfoTest.setText("Type: " + typeOfMusic + "\nTrackId: " + trackId + "\nArtist: " + artistName + "\nAlbum: " + albumName + "\nName: " + trackName + "\nLength: " + trackLengthSeconds);
+
+                updateBackgroundPicture();
 
                 MainMenuPagerActivity.trackInfoNeedsUpdate = false; //Has been updated
             }
@@ -95,20 +124,41 @@ public class PrimaryUIFragment extends Fragment{
     }
 
     public void updateBackgroundPicture(){
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+        String backgroundSourceUrl = spotifyTrackWebRetrievalURL + trackId.substring(trackId.indexOf(":", trackId.indexOf(":") + 1) + 1);
+        Log.i("Background Source URL", backgroundSourceUrl);
+
+        JsonObjectRequest request = new JsonObjectRequest(backgroundSourceUrl, null,
+                new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        mTxtDisplay.setText("Response: " + response.toString());
-                    }
-                }, new Response.ErrorListener() {
+                        String backgroundImgUrl = "";
+                        try {
+                            //Parse JSON returned from spotify to retrieve the URL of the album art
+                            JSONObject album = response.getJSONObject("album");
+                            JSONArray images  = album.getJSONArray("images");
+                            JSONObject firstImage = images.getJSONObject(0);
+                            backgroundImgUrl = firstImage.getString("url");
+                            Log.i("Background IMG URL", backgroundImgUrl);
+                        } catch (JSONException e) { e.printStackTrace(); }
 
+                        // Set the URL of the image that should be loaded
+                        mNetworkImageView.setImageUrl(backgroundImgUrl, mImageLoader);
+                    }
+                },
+
+                new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-
+                        Log.e("PrimaryUIFragment", error.toString());
                     }
-                });
+                }
+        );
+        MySingleton.getInstance(getActivity()).getRequestQueue().add(request);
     }
+
+    public String getSpotifyAlbumIdFromTrackURI(String trackUri){
+        return "";
+    }
+
 }

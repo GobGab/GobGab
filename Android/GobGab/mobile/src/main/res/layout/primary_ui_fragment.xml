@@ -1,28 +1,28 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/content"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/primaryUIFragmentContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <TextView style="?android:textAppearanceMedium"
-        android:padding="16dp"
-        android:id="@+id/primaryText"
-        android:lineSpacingMultiplier="1.2"
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/primaryUIFragmentBackground"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Primary UI" />
+        android:layout_height="match_parent"
+        android:alpha="0.5"
+        tools:ignore="ContentDescription" />
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/primaryText"
-        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
         android:id="@+id/testbutton"/>
 
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/testbutton"
-        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/testbutton"
         android:id="@+id/testbutton2"/>
 
     <TextView style="?android:textAppearanceMedium"
