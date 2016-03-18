@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -23,6 +23,13 @@ import com.android.volley.toolbox.NetworkImageView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import fr.rolandl.carousel.Carousel;
+import fr.rolandl.carousel.CarouselAdapter;
+import fr.rolandl.carousel.CarouselBaseAdapter;
 
 /**
  * Created by David on 3/13/2016.
@@ -41,6 +48,8 @@ public class PrimaryUIFragment extends Fragment{
 
     private Handler updateTrackInfoHandler = new Handler();
 
+    Carousel musicIconCarousel;
+
     TextView spotifyInfoTest;
 
     RelativeLayout primaryUIFragLayout;
@@ -48,8 +57,6 @@ public class PrimaryUIFragment extends Fragment{
 
     ImageLoader mImageLoader;
     NetworkImageView mNetworkImageView;
-
-    public ViewPager musicIconPager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,9 +70,6 @@ public class PrimaryUIFragment extends Fragment{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.primary_ui_fragment, container, false);
-
-//        (new UpdateTrackThread()).start(); //Start checking for new track updates
-
 
         updateTrackInfoHandler.postDelayed(checkUpdateTrackRunnable, 200);
 
@@ -84,12 +88,33 @@ public class PrimaryUIFragment extends Fragment{
 
         mNetworkImageView = (NetworkImageView) rootView.findViewById(R.id.primaryUIFragmentBackground);
 
-        spotifyInfoTest = (TextView) rootView.findViewById(R.id.spotifyInfoTest);
+        //spotifyInfoTest = (TextView) rootView.findViewById(R.id.spotifyInfoTest);
 
         primaryUIFragLayout = (RelativeLayout) rootView.findViewById(R.id.primaryUIFragmentContent);
         middleFrameLayout = (FrameLayout) rootView.findViewById(R.id.primaryUIInnerFrameLayout);
 
-        middleFrameLayout.setBackgroundColor(Color.GRAY);
+        musicIconCarousel = (Carousel) rootView.findViewById(R.id.musicIconsCarousel);
+
+        List<PrimaryUICarousel> musicIcons = new ArrayList<>();
+        musicIcons.add(new PrimaryUICarousel("Photo1", "gg_icon.png"));
+        musicIcons.add(new PrimaryUICarousel("Photo2", "spotify-icon.png"));
+        musicIcons.add(new PrimaryUICarousel("Photo3", "fotolia_48275073"));
+        musicIcons.add(new PrimaryUICarousel("Photo4", "fotolia_50806609"));
+        musicIcons.add(new PrimaryUICarousel("Photo5", "fotolia_61643329"));
+
+        final CarouselAdapter musicIconCarouselAdapter = new MyCarouselAdapter(getActivity(), musicIcons);
+        musicIconCarousel.setAdapter(musicIconCarouselAdapter);
+        musicIconCarouselAdapter.notifyDataSetChanged();
+
+        musicIconCarousel.setOnItemClickListener(new CarouselBaseAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(CarouselBaseAdapter<?> carouselBaseAdapter, View view, int position, long id) {
+                Toast.makeText(getActivity(), "The item '" + position + "' has been clicked", Toast.LENGTH_SHORT).show();
+                musicIconCarousel.scrollToChild(position);
+            }
+        });
+
+        middleFrameLayout.setBackgroundColor(Color.WHITE);
 
         return rootView;
     }
@@ -118,7 +143,7 @@ public class PrimaryUIFragment extends Fragment{
         typeOfMusic = MainMenuPagerActivity.settings.getString("typeOfMusic", "");
         trackLengthSeconds = MainMenuPagerActivity.settings.getInt("trackLengthSeconds", 0) + "";
 
-        spotifyInfoTest.setText("Type: " + typeOfMusic + "\nTrackId: " + trackId + "\nArtist: " + artistName + "\nAlbum: " + albumName + "\nName: " + trackName + "\nLength: " + trackLengthSeconds);
+       // spotifyInfoTest.setText("Type: " + typeOfMusic + "\nTrackId: " + trackId + "\nArtist: " + artistName + "\nAlbum: " + albumName + "\nName: " + trackName + "\nLength: " + trackLengthSeconds);
 
         updateBackgroundPicture();
 

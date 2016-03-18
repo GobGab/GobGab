@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:alpha="0.75"
+        android:alpha="1"
         tools:ignore="ContentDescription" />
 
     <android.support.design.widget.FloatingActionButton
@@ -28,19 +28,20 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="150dp"
         android:layout_centerVertical="true"
         android:id="@+id/primaryUIInnerFrameLayout"
-        android:alpha=".5">
+        android:alpha=".6">
 
-        <TextView style="?android:textAppearanceMedium"
-            android:padding="16dp"
-            android:id="@+id/spotifyInfoTest"
-            android:lineSpacingMultiplier="1.2"
+        <fr.rolandl.carousel.Carousel
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/musicIconsCarousel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textColor="#FFFFFF"
-            android:text="" />
+            android:animationDuration="200"
+            />
+
+
     </FrameLayout>
 
 </RelativeLayout>

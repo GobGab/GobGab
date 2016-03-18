@@ -44,4 +44,7 @@ dependencies {
     //Volley
     compile 'com.mcxiaoke.volley:library:1.0.+'
 
+    //3D Carousel
+    compile 'fr.rolandl:carousel:1.0.1@aar'
+
 }
