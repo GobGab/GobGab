@@ -47,4 +47,6 @@ dependencies {
     //3D Carousel
     compile 'fr.rolandl:carousel:1.0.1@aar'
 
+    compile 'de.hdodenhof:circleimageview:1.3.0'
+    compile 'com.android.support:support-v4:23.0.0'
 }

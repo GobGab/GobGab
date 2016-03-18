@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_item_1"
+            android:icon="@drawable/ic_cast_dark"
+            android:title="Chromecast"/>
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/com_facebook_button_icon_blue"
+            android:title="Log Out"/>
+        <item
+            android:id="@+id/nav_settings"
+            android:checked="false"
+            android:icon="@drawable/ic_setting_light"
+            android:title="Settings"/>
+
+    </group>
+</menu>

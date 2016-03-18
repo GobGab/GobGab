@@ -4,16 +4,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -24,6 +33,8 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerNotificationCallback;
 import com.spotify.sdk.android.player.PlayerState;
 import com.spotify.sdk.android.player.Spotify;
+
+import org.json.JSONObject;
 
 /**
  * Created by David on 3/13/2016.
@@ -50,9 +61,14 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     public static SharedPreferences settings;
     public static  SharedPreferences.Editor editor;
 
-    InboxFragment inboxFrag = new InboxFragment();
-    PrimaryUIFragment uiFrag = new PrimaryUIFragment();
-    SocialFragment socialFrag = new SocialFragment();
+    InboxFragment inboxFrag;
+    PrimaryUIFragment uiFrag;
+    SocialFragment socialFrag;
+
+    //Nav Drawer Variables
+    private Toolbar toolbar;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
 
     /**
      * The pager adapter, which provides the pages to the view pager widget.
@@ -63,6 +79,11 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_menu_viewpager);
+
+        //Instantiate fragments
+        inboxFrag = new InboxFragment();
+        uiFrag = new PrimaryUIFragment();
+        socialFrag = new SocialFragment();
 
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.pager);
@@ -87,6 +108,72 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
 
             AuthenticationClient.openLoginActivity(this, SPOTIFY_REQUEST_CODE, request);
         }
+
+        // Initializing Toolbar and setting it as the actionbar
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        //Initializing NavigationView
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+
+
+
+        //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+
+            // This method will trigger on item Click of navigation menu
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+
+                //Checking if the item is in checked state or not, if not make it in checked state
+                if(menuItem.isChecked()) menuItem.setChecked(false);
+                else menuItem.setChecked(true);
+
+                //Closing drawer on item click
+                drawerLayout.closeDrawers();
+
+                //Check to see which item was being clicked and perform appropriate action
+                switch (menuItem.getItemId()){
+                    //Replacing the main content with ContentFragment Which is our Inbox View;
+                    case R.id.nav_logout:
+                        logout();
+                        return true;
+                    case R.id.nav_settings:
+                        return true;
+                    default:
+                        Toast.makeText(getApplicationContext(),"Somethings Wrong",Toast.LENGTH_SHORT).show();
+                        return true;
+
+                }
+            }
+        });
+
+        // Initializing Drawer Layout and ActionBarToggle
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.openDrawer, R.string.closeDrawer){
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
+                super.onDrawerClosed(drawerView);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
+
+                super.onDrawerOpened(drawerView);
+            }
+        };
+
+        //Setting the actionbarToggle to drawer layout
+        drawerLayout.setDrawerListener(actionBarDrawerToggle);
+
+        //calling sync state is necessay or else your hamburger icon wont show up
+        actionBarDrawerToggle.syncState();
+
+        getFacebookInfo();
+
     }
 
     @Override
@@ -101,9 +188,6 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
             }
         }
     }
-
-
-
 
     @Override
     public void onBackPressed() {
@@ -128,7 +212,6 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                logout();
                 return true;
 
             default:
@@ -141,6 +224,7 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
         AuthenticationClient.clearCookies(this);
         Intent startMainScreen = new Intent(MainMenuPagerActivity.this, LoginActivity.class);
         startActivity(startMainScreen);
+
         finish();
     }
 
@@ -253,5 +337,21 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
                 Log.e("MainMenuPagerActivity", "Could not initialize player: " + throwable.getMessage());
             }
         });
+    }
+
+    public void getFacebookInfo(){
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted( JSONObject object, GraphResponse response) {
+                        // Application code
+                    }
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name,link");
+        request.setParameters(parameters);
+        request.executeAsync();
     }
 }

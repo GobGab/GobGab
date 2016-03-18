@@ -13,34 +13,20 @@
         android:alpha="1"
         tools:ignore="ContentDescription" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/testbutton"/>
-
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/testbutton"
-        android:id="@+id/testbutton2"/>
-
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="200dp"
         android:layout_centerVertical="true"
         android:id="@+id/primaryUIInnerFrameLayout"
-        android:alpha=".6">
+        >
 
         <fr.rolandl.carousel.Carousel
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/musicIconsCarousel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:animationDuration="200"
-            />
-
+            android:alpha=".8"
+            android:animationDuration="200" />
 
     </FrameLayout>
 

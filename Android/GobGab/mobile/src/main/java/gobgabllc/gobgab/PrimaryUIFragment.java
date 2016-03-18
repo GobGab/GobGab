@@ -1,17 +1,17 @@
 package gobgabllc.gobgab;
 
-import android.graphics.Color;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Response;
@@ -39,6 +39,9 @@ public class PrimaryUIFragment extends Fragment{
     //Spotify Endpoint for GET requests to retrieve album information
     public static String spotifyTrackWebRetrievalURL = "https://api.spotify.com/v1/tracks/";
 
+    public static String spotifyPackageName = "com.spotify.music";
+    public static String applePackageName = "com.apple.android.music";
+
     public static String trackId;
     public static String artistName;
     public static String albumName;
@@ -50,10 +53,7 @@ public class PrimaryUIFragment extends Fragment{
 
     Carousel musicIconCarousel;
 
-    TextView spotifyInfoTest;
-
     RelativeLayout primaryUIFragLayout;
-    FrameLayout middleFrameLayout;
 
     ImageLoader mImageLoader;
     NetworkImageView mNetworkImageView;
@@ -63,44 +63,31 @@ public class PrimaryUIFragment extends Fragment{
         super.onCreate(savedInstanceState);
 
         mImageLoader = new ImageLoader(MySingleton.getInstance(getActivity()).getRequestQueue(), new LruBitmapCache(LruBitmapCache.getCacheSize(getActivity())));
+        Log.i("PrimaryUIFrag", "In onCreate");
 
-        MainMenuPagerActivity.trackInfoNeedsUpdate=true; //Update track info once when app loads using previously set values
+        updateTrackInfoHandler.postDelayed(checkUpdateTrackRunnable, 200);
+
+        updateTrackInfo();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.primary_ui_fragment, container, false);
 
-        updateTrackInfoHandler.postDelayed(checkUpdateTrackRunnable, 200);
-
-        final FloatingActionButton button = (FloatingActionButton) rootView.findViewById(R.id.testbutton);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                playMusic();
-            }
-        });
-
-        final FloatingActionButton button2 = (FloatingActionButton) rootView.findViewById(R.id.testbutton2);
-        button2.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-            }
-        });
+        Log.i("PrimaryUIFrag", "In onCreateView");
 
         mNetworkImageView = (NetworkImageView) rootView.findViewById(R.id.primaryUIFragmentBackground);
 
-        //spotifyInfoTest = (TextView) rootView.findViewById(R.id.spotifyInfoTest);
-
         primaryUIFragLayout = (RelativeLayout) rootView.findViewById(R.id.primaryUIFragmentContent);
-        middleFrameLayout = (FrameLayout) rootView.findViewById(R.id.primaryUIInnerFrameLayout);
 
         musicIconCarousel = (Carousel) rootView.findViewById(R.id.musicIconsCarousel);
 
         List<PrimaryUICarousel> musicIcons = new ArrayList<>();
-        musicIcons.add(new PrimaryUICarousel("Photo1", "gg_icon.png"));
-        musicIcons.add(new PrimaryUICarousel("Photo2", "spotify-icon.png"));
-        musicIcons.add(new PrimaryUICarousel("Photo3", "fotolia_48275073"));
-        musicIcons.add(new PrimaryUICarousel("Photo4", "fotolia_50806609"));
-        musicIcons.add(new PrimaryUICarousel("Photo5", "fotolia_61643329"));
+        musicIcons.add(new PrimaryUICarousel("", "spotify_icon"));
+        musicIcons.add(new PrimaryUICarousel("", "google_play_icon"));
+        musicIcons.add(new PrimaryUICarousel("", "paper_clip_icon"));
+        musicIcons.add(new PrimaryUICarousel("", "record_icon"));
+        musicIcons.add(new PrimaryUICarousel("", "apple_music_icon"));
 
         final CarouselAdapter musicIconCarouselAdapter = new MyCarouselAdapter(getActivity(), musicIcons);
         musicIconCarousel.setAdapter(musicIconCarouselAdapter);
@@ -109,12 +96,11 @@ public class PrimaryUIFragment extends Fragment{
         musicIconCarousel.setOnItemClickListener(new CarouselBaseAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(CarouselBaseAdapter<?> carouselBaseAdapter, View view, int position, long id) {
-                Toast.makeText(getActivity(), "The item '" + position + "' has been clicked", Toast.LENGTH_SHORT).show();
                 musicIconCarousel.scrollToChild(position);
+                handleMusicIconClick(position);
             }
         });
 
-        middleFrameLayout.setBackgroundColor(Color.WHITE);
 
         return rootView;
     }
@@ -136,14 +122,13 @@ public class PrimaryUIFragment extends Fragment{
     }
 
     public void updateTrackInfo(){
+        Log.i("updateTrackInfo", "Updating info");
         trackId = MainMenuPagerActivity.settings.getString("trackId", "");
         artistName = MainMenuPagerActivity.settings.getString("artistName", "");
         albumName = MainMenuPagerActivity.settings.getString("albumName", "");
         trackName = MainMenuPagerActivity.settings.getString("trackName", "");
         typeOfMusic = MainMenuPagerActivity.settings.getString("typeOfMusic", "");
         trackLengthSeconds = MainMenuPagerActivity.settings.getInt("trackLengthSeconds", 0) + "";
-
-       // spotifyInfoTest.setText("Type: " + typeOfMusic + "\nTrackId: " + trackId + "\nArtist: " + artistName + "\nAlbum: " + albumName + "\nName: " + trackName + "\nLength: " + trackLengthSeconds);
 
         updateBackgroundPicture();
 
@@ -184,8 +169,63 @@ public class PrimaryUIFragment extends Fragment{
         MySingleton.getInstance(getActivity()).getRequestQueue().add(request);
     }
 
-    public String getSpotifyAlbumIdFromTrackURI(String trackUri){
-        return "";
+    //Called whenever an icon on the carousel is clicked
+    public void handleMusicIconClick(int position){
+        String message="";
+        switch(position){
+            case 0:
+                spotifyIconClicked();
+                return;
+            case 1:
+                message="Play Music";
+                break;
+            case 2:
+                message="Attachment";
+                break;
+            case 3:
+                message="Record";
+                break;
+            case 4:
+                appleMusicClicked();
+                return;
+            default:
+                message="Nothing";
+        }
+        Toast.makeText(getActivity(),  message + " has been clicked" + "\nTrack: " + trackName + "\nArtist: " + artistName + "\nAlbum: " + albumName, Toast.LENGTH_LONG).show();
     }
 
+    public void spotifyIconClicked(){
+
+        Intent intent=null;
+
+        //Check if spotify is installed. Otherwise prompt to install
+        if(isPackageInstalled(spotifyPackageName, getActivity())){
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("spotify:track:5j3QqRGflS4o5jbsFSwKW1"));
+        }else{
+            intent = new Intent( Intent.ACTION_VIEW, Uri.parse("market://details?id=" + spotifyPackageName));
+        }
+        getActivity().startActivity(intent);
+    }
+
+    public void playMusicClicked(){
+
+    }
+
+    public void appleMusicClicked(){
+        if(!isPackageInstalled(applePackageName, getActivity())){
+           Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse("market://details?id=" + applePackageName));
+           startActivity(intent);
+        }
+    }
+
+    //Check if the given package is installed
+    public boolean isPackageInstalled(String packagename, Context context){
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(packagename, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
 }
