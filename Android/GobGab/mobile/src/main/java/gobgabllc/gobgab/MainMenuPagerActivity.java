@@ -78,13 +78,6 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
 
         //If Spotify token exists, create player. Else, retrieve token
         if( settings.getString("SpotifyToken", "") != "" ){
-            //Toast.makeText(this, "instantiating", Toast.LENGTH_SHORT).show();
-
-            settings.getString("trackId", "");
-            settings.getString("artistName", "");
-            settings.getString("albumName", "");
-            settings.getString("trackName", "");
-
             instantiateSpotifyPlayer();
         }else{
             AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(MainMenuPagerActivity.CLIENT_ID, AuthenticationResponse.Type.TOKEN, MainMenuPagerActivity.REDIRECT_URI);

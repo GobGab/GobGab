@@ -1,12 +1,16 @@
 package gobgabllc.gobgab;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -19,8 +23,6 @@ import com.android.volley.toolbox.NetworkImageView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static com.google.android.gms.internal.zzir.runOnUiThread;
 
 /**
  * Created by David on 3/13/2016.
@@ -37,12 +39,17 @@ public class PrimaryUIFragment extends Fragment{
     public static String typeOfMusic;
     public static String trackLengthSeconds;
 
+    private Handler updateTrackInfoHandler = new Handler();
+
     TextView spotifyInfoTest;
 
     RelativeLayout primaryUIFragLayout;
+    FrameLayout middleFrameLayout;
 
     ImageLoader mImageLoader;
     NetworkImageView mNetworkImageView;
+
+    public ViewPager musicIconPager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,7 +64,10 @@ public class PrimaryUIFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.primary_ui_fragment, container, false);
 
-        (new UpdateTrackThread()).start(); //Start checking for new track updates
+//        (new UpdateTrackThread()).start(); //Start checking for new track updates
+
+
+        updateTrackInfoHandler.postDelayed(checkUpdateTrackRunnable, 200);
 
         final FloatingActionButton button = (FloatingActionButton) rootView.findViewById(R.id.testbutton);
         button.setOnClickListener(new View.OnClickListener() {
@@ -77,24 +87,22 @@ public class PrimaryUIFragment extends Fragment{
         spotifyInfoTest = (TextView) rootView.findViewById(R.id.spotifyInfoTest);
 
         primaryUIFragLayout = (RelativeLayout) rootView.findViewById(R.id.primaryUIFragmentContent);
+        middleFrameLayout = (FrameLayout) rootView.findViewById(R.id.primaryUIInnerFrameLayout);
+
+        middleFrameLayout.setBackgroundColor(Color.GRAY);
 
         return rootView;
     }
 
-    public class UpdateTrackThread extends Thread {
-
+    private Runnable checkUpdateTrackRunnable = new Runnable() {
+        @Override
         public void run() {
-            while(true) {
-                if (MainMenuPagerActivity.trackInfoNeedsUpdate) {
-                    updateTrackInfo();
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) { e.printStackTrace(); }
+            if (MainMenuPagerActivity.trackInfoNeedsUpdate) {
+                updateTrackInfo();
             }
+            updateTrackInfoHandler.postDelayed(this, 100);
         }
-
-    }
+    };
 
     public void playMusic(){
         if(MainMenuPagerActivity.playerIsInitialized){
@@ -103,24 +111,18 @@ public class PrimaryUIFragment extends Fragment{
     }
 
     public void updateTrackInfo(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                trackId = MainMenuPagerActivity.settings.getString("trackId", "");
-                artistName = MainMenuPagerActivity.settings.getString("artistName", "");
-                albumName = MainMenuPagerActivity.settings.getString("albumName", "");
-                trackName = MainMenuPagerActivity.settings.getString("trackName", "");
-                typeOfMusic = MainMenuPagerActivity.settings.getString("typeOfMusic", "");
-                trackLengthSeconds = MainMenuPagerActivity.settings.getInt("trackLengthSeconds", 0) + "";
+        trackId = MainMenuPagerActivity.settings.getString("trackId", "");
+        artistName = MainMenuPagerActivity.settings.getString("artistName", "");
+        albumName = MainMenuPagerActivity.settings.getString("albumName", "");
+        trackName = MainMenuPagerActivity.settings.getString("trackName", "");
+        typeOfMusic = MainMenuPagerActivity.settings.getString("typeOfMusic", "");
+        trackLengthSeconds = MainMenuPagerActivity.settings.getInt("trackLengthSeconds", 0) + "";
 
-                spotifyInfoTest.setText("Type: " + typeOfMusic + "\nTrackId: " + trackId + "\nArtist: " + artistName + "\nAlbum: " + albumName + "\nName: " + trackName + "\nLength: " + trackLengthSeconds);
+        spotifyInfoTest.setText("Type: " + typeOfMusic + "\nTrackId: " + trackId + "\nArtist: " + artistName + "\nAlbum: " + albumName + "\nName: " + trackName + "\nLength: " + trackLengthSeconds);
 
-                updateBackgroundPicture();
+        updateBackgroundPicture();
 
-                MainMenuPagerActivity.trackInfoNeedsUpdate = false; //Has been updated
-            }
-        });
-
+        MainMenuPagerActivity.trackInfoNeedsUpdate = false; //Has been updated
     }
 
     public void updateBackgroundPicture(){
