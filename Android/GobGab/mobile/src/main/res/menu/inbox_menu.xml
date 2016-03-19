@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--<item-->
+        <!--android:id="@+id/chat"-->
+        <!--android:icon="@drawable/chat_menu_icon"-->
+        <!--app:showAsAction="ifRoom"-->
+        <!--android:orderInCategory="1"-->
+        <!--android:title="Search">-->
+    <!--</item>-->
+
+    <!--<item-->
+        <!--android:id="@+id/search"-->
+        <!--android:icon="@drawable/search_menu_icon"-->
+        <!--android:orderInCategory="2"-->
+        <!--app:showAsAction="ifRoom"-->
+        <!--android:title="Search">-->
+    <!--</item>-->
+
+</menu>

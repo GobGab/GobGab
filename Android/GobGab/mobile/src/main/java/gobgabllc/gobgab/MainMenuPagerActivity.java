@@ -58,7 +58,7 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
     public static Context MainMenuContext;
 
     private static final int NUM_PAGES = 3;
-    private ViewPager mPager;
+    public static ViewPager mPager;
 
     public static SharedPreferences settings;
     public static  SharedPreferences.Editor editor;
@@ -217,13 +217,7 @@ public class MainMenuPagerActivity extends AppCompatActivity  implements PlayerN
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void logout(){

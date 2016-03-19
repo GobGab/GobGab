@@ -3,6 +3,8 @@ package gobgabllc.gobgab;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -23,12 +25,13 @@ public class InboxFragment extends ListFragment {
         super.onCreate(savedInstanceState);
 
         setListAdapter(new FriendsListAdapter(getActivity(), Android));
+
+        setHasOptionsMenu(true); //Add specific actions to app bar
+
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(
-                R.layout.inbox_fragment, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ViewGroup rootView = (ViewGroup) inflater.inflate( R.layout.inbox_fragment, container, false);
 
         return rootView;
     }
@@ -47,9 +50,14 @@ public class InboxFragment extends ListFragment {
 
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View v, int position, long id) {
-                Toast.makeText(getActivity(), ""+position, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_LONG).show();
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onCreateOptionsMenu( Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.inbox_menu, menu);
     }
 }

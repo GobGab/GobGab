@@ -9,8 +9,11 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -62,6 +65,8 @@ public class PrimaryUIFragment extends Fragment{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setHasOptionsMenu(true); //Add specific actions to app bar
+
         mImageLoader = new ImageLoader(MySingleton.getInstance(getActivity()).getRequestQueue(), new LruBitmapCache(LruBitmapCache.getCacheSize(getActivity())));
         Log.i("PrimaryUIFrag", "In onCreate");
 
@@ -101,8 +106,33 @@ public class PrimaryUIFragment extends Fragment{
             }
         });
 
+        ImageButton inboxButton = (ImageButton) rootView.findViewById(R.id.inboxButton);
+        inboxButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try{
+                    MainMenuPagerActivity.mPager.setCurrentItem(0);
+                }catch(Exception e){Log.e("PrimaryUI.InboxClick", e.toString());}
+            }
+        });
+
+        ImageButton socialButton = (ImageButton) rootView.findViewById(R.id.socialButton);
+        socialButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try{
+                    MainMenuPagerActivity.mPager.setCurrentItem(2);
+                }catch(Exception e){Log.e("PrimaryUI.InboxClick", e.toString());}
+            }
+        });
+
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu( Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.primary_ui_menu, menu);
     }
 
     private Runnable checkUpdateTrackRunnable = new Runnable() {
