@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:alpha="1"
+        android:alpha=".8"
         tools:ignore="ContentDescription" />
 
     <FrameLayout
@@ -25,7 +25,7 @@
             android:id="@+id/musicIconsCarousel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:alpha=".8"
+            android:alpha="1"
             android:animationDuration="200" />
 
     </FrameLayout>
