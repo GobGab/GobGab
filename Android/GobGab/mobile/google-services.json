@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "254129363728",
+    "project_id": "gobgab-4003"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254129363728:android:436b2bc0f85ee25a",
+        "android_client_info": {
+          "package_name": "gobgabllc.gobgab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW4r23JyRUdDl0SzlUPGwYH0jf5sdoUW8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
